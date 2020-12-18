@@ -19,8 +19,20 @@ CONFD_CONFIG_DIR="/opt/minion/confd"
 CONFD_BIN="/usr/local/bin/confd"
 CONFD_CONFIG_FILE="${CONFD_CONFIG_DIR}/confd.toml"
 CACERTS="/opt/minion/cacerts"
+PROM_JMX_EXPORTER_ENABLED="${PROM_JMX_EXPORTER_ENABLED:-false}"
+PROM_JMX_EXPORTER_PORT="${PROM_JMX_EXPORTER_PORT:-9299}"
+PROM_JMX_EXPORTER_CONFIG="${PROM_JMX_EXPORTER_CONFIG:-/opt/prom-jmx-exporter/config.yaml}"
+PROM_JMX_EXPORTER_JAR="${PROM_JMX_EXPORTER_JAR:-/opt/prom-jmx-exporter/jmx_prometheus_javaagent.jar}"
 
 export KARAF_OPTS="-Djava.locale.providers=CLDR,COMPAT"
+
+# Enable Prometheus JMX exporter
+if [[ "${PROM_JMX_EXPORTER_ENABLED,,}" = true ]]; then
+  export KARAF_OPTS="${KARAF_OPTS} -javaagent:${PROM_JMX_EXPORTER_JAR}=${PROM_JMX_EXPORTER_PORT}:${PROM_JMX_EXPORTER_CONFIG}"
+  echo "Enable Prometheus exporter with the options: ${KARAF_OPTS}"
+else
+  echo "Prometheus exporter is disabled."
+fi
 
 # Error codes
 E_ILLEGAL_ARGS=126
