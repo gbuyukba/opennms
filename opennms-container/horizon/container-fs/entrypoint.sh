@@ -18,6 +18,10 @@ OPENNMS_HOME="/opt/opennms"
 OPENNMS_OVERLAY="/opt/opennms-overlay"
 OPENNMS_OVERLAY_ETC="/opt/opennms-etc-overlay"
 OPENNMS_OVERLAY_JETTY_WEBINF="/opt/opennms-jetty-webinf-overlay"
+PROM_JMX_EXPORTER_ENABLED="${PROM_JMX_EXPORTER_ENABLED:-false}"
+PROM_JMX_EXPORTER_PORT="${PROM_JMX_EXPORTER_PORT:-9299}"
+PROM_JMX_EXPORTER_CONFIG="${PROM_JMX_EXPORTER_CONFIG:-/opt/prom-jmx-exporter/config.yaml}"
+PROM_JMX_EXPORTER_JAR="${PROM_JMX_EXPORTER_JAR:-/opt/prom-jmx-exporter/jmx_prometheus_javaagent.jar}"
 
 # Error codes
 E_ILLEGAL_ARGS=126
@@ -40,6 +44,14 @@ usage() {
   echo "-t: Run the config-tester, e.g -t -h to show help and available options."
   echo ""
 }
+
+# Enable Prometheus JMX exporter
+if [[ "${PROM_JMX_EXPORTER_ENABLED,,}" = true ]]; then
+  export JAVA_OPTS="${JAVA_OPTS} -javaagent:${PROM_JMX_EXPORTER_JAR}=${PROM_JMX_EXPORTER_PORT}:${PROM_JMX_EXPORTER_CONFIG}"
+  echo "Enable Prometheus exporter with the options: ${JAVA_OPTS}"
+else
+  echo "Prometheus exporter is disabled."
+fi
 
 initOrUpdate() {
   if [[ -f "${OPENNMS_HOME}"/etc/configured ]]; then

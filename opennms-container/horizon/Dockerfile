@@ -14,6 +14,9 @@ ARG REPO_RPM="https://yum.opennms.org/repofiles/opennms-repo-stable-rhel8.noarch
 ARG CONFD_VERSION="0.16.0"
 ARG CONFD_URL="https://github.com/kelseyhightower/confd/releases/download/v${CONFD_VERSION}/confd-${CONFD_VERSION}-linux-amd64"
 
+ARG PROM_JMX_EXPORTER_VERSION="0.14.0"
+ARG PROM_JMX_EXPORTER_URL="https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROM_JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${PROM_JMX_EXPORTER_VERSION}.jar"
+
 SHELL ["/bin/bash", "-c"]
 
 # Collect generic steps in a layer for caching
@@ -33,6 +36,9 @@ RUN dnf -y install dnf-plugins-core && \
 RUN setcap cap_net_raw+ep ${JAVA_HOME}/bin/java && \
     echo ${JAVA_HOME}/lib/jli > /etc/ld.so.conf.d/java-latest.conf && \
     ldconfig
+
+RUN mkdir -p /opt/prom-jmx-exporter && \
+    curl --retry 5 --fail -L "${PROM_JMX_EXPORTER_URL}" --output /opt/prom-jmx-exporter/jmx_prometheus_javaagent.jar
 
 # Create OpenNMS user with a specific group ID
 RUN groupadd -g 10001 opennms && \
